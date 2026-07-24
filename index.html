@@ -169,6 +169,9 @@
   .calday .sp.o{border:0;background:transparent;color:var(--ink-faint);padding-left:0;}
   .calday .sp.hyp{border-left:2px solid var(--red);color:var(--ink-soft);background:var(--red-soft);}
   .calday .sp.free{border-left-color:var(--ink-faint);color:var(--ink-faint);opacity:.65;background:transparent;}
+  .calday .sp[draggable]{cursor:grab;}
+  .calday .sp.dragging{opacity:.35;cursor:grabbing;}
+  .calday.dragover{outline:2px dashed var(--red);outline-offset:-3px;background:var(--red-soft);}
   .calweektot{background:var(--dark);padding:8px 4px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:2px;}
   .calweektot .wc{font-family:var(--mono);font-weight:700;font-size:17px;color:var(--red);}
   .calweektot .wl{font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:#8C8A83;}
@@ -441,13 +444,13 @@
         var isFri=(col===4);
         var occW=Math.floor((day-1)/7)+1;   // 1st..5th occurrence of this weekday in the month
         var ss=isFri?[]:sessions(col).filter(function(c){return occW<=callsAt(c,idx);});  // client shows only for as many weeks as they have calls (Monthly 3/mo -> 4th week open)
-        var cell='<div class="calday'+(isFri?' off':'')+'"><div class="dnum">'+day+'</div>';
+        var cell='<div class="calday'+(isFri?' off':'')+'" data-col="'+col+'"><div class="dnum">'+day+'</div>';
         if(isFri){cell+='<div class="sp o">off</div>';}
         else{ss.forEach(function(c){
           var free=payAt(c,idx)===0;
           var key=(!c.real && c.name.indexOf('[Monthly]')>=0);
           var em=c.real&&!key?'&#128274;':key?'&#128477;&#65039;':'&#128293;';   // lock / key / fire
-          cell+='<div class="sp'+(c.tag==='integration'?' integ':'')+(c.real?'':' hyp')+(free?' free':'')+'" title="'+c.name+(free?' ($0 pre-paid)':'')+'">'+em+' '+c.time+' '+c.name+(free?' &middot; $0':'')+'</div>';
+          cell+='<div class="sp'+(c.tag==='integration'?' integ':'')+(c.real?'':' hyp')+(free?' free':'')+'" draggable="true" data-nm="'+c.name+'" title="'+c.name+(free?' ($0 pre-paid)':'')+'">'+em+' '+c.time+' '+c.name+(free?' &middot; $0':'')+'</div>';
         });wc+=ss.length;}
         row+=cell+'</div>';
       }
@@ -515,6 +518,31 @@
   $("tFinish6").addEventListener("change",function(e){finish6=e.target.checked;renderAll();});
   $("tChandler").addEventListener("change",function(e){chandlerWrap=e.target.checked;renderAll();});
   $("tMartel43").addEventListener("change",function(e){martel43=e.target.checked;renderAll();});
+
+  // drag a session to another day (visual rearrange; resets on reload)
+  (function(){
+    var cm=$("calmonth"), dragName=null;
+    function clearHi(){var d=cm.querySelector(".calday.dragover");if(d)d.classList.remove("dragover");}
+    cm.addEventListener("dragstart",function(e){
+      var sp=e.target.closest&&e.target.closest(".sp[data-nm]");if(!sp)return;
+      dragName=sp.getAttribute("data-nm");sp.classList.add("dragging");
+      if(e.dataTransfer){e.dataTransfer.effectAllowed="move";try{e.dataTransfer.setData("text/plain",dragName);}catch(x){}}
+    });
+    cm.addEventListener("dragend",function(){var s=cm.querySelector(".sp.dragging");if(s)s.classList.remove("dragging");clearHi();dragName=null;});
+    cm.addEventListener("dragover",function(e){
+      var d=e.target.closest&&e.target.closest(".calday[data-col]");
+      if(!d||d.classList.contains("empty")||+d.getAttribute("data-col")>3)return;   // drop on Mon-Thu only
+      e.preventDefault();if(e.dataTransfer)e.dataTransfer.dropEffect="move";
+      if(!d.classList.contains("dragover")){clearHi();d.classList.add("dragover");}
+    });
+    cm.addEventListener("drop",function(e){
+      var d=e.target.closest&&e.target.closest(".calday[data-col]");if(!d)return;
+      var col=+d.getAttribute("data-col");if(col>3)return;
+      e.preventDefault();clearHi();
+      if(dragName!=null){var all=activeClients();for(var i=0;i<all.length;i++){if(all[i].name===dragName){all[i].day=col;break;}}}
+      dragName=null;renderCalendar();
+    });
+  })();
 
   $("fcTable").addEventListener("click",function(e){
     var b=e.target.closest(".rm");if(!b)return;
