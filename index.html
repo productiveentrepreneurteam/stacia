@@ -297,7 +297,7 @@
 
     <div class="fsummary">
       <span class="glab">[ goal by end of year ]</span>
-      <span class="gbig">5 Evolution <em>+</em> 4 Monthly</span>
+      <span class="gbig">4 Evolution <em>+</em> 4 Monthly</span>
       <span class="gsub"><b id="sClose">9</b> still to sell &middot; fullest month <b id="sPeak">&nbsp;</b></span>
     </div>
 
@@ -307,6 +307,7 @@
       <label class="tog"><input type="checkbox" id="tFinish6"> <b>Evolution finishes in 6</b></label>
       <label class="tog"><input type="checkbox" id="tChandler"> <b>Wrap Chandler early</b></label>
       <label class="tog"><input type="checkbox" id="tMartel43"> <b>Martel 4 &rarr; 3 calls</b></label>
+      <label class="tog"><input type="checkbox" id="tLeah2"> <b>Leah 2&times;/month at $659</b></label>
     </div>
     <div class="callegend">
       <span>&#128274; committed &middot; already paying</span>
@@ -345,7 +346,7 @@
 <div class="band">
   <div class="inner foot">
     <b>Warm names to reach for</b><br>
-    Leah (moving into monthly) &middot; Shae &middot; Joanne &middot; Shannon &middot; Julianna.
+    Leah (moving into monthly) &middot; Joanne &middot; Shannon &middot; Julianna.
     <div class="volstamp"><span>[ Stacia Ashe Studios ]</span><span class="r">vol. 01 &middot; the year ahead</span><span>[ page 07 ]</span></div>
   </div>
 </div>
@@ -361,27 +362,28 @@
     {name:'Ginny', tag:'integration', day:2, time:'6:30p', tk:1830, real:true, occ:[0,12], pay:{amt:0}},
     {name:'Martel', tag:'monthly', day:3, time:'6:30p', tk:1830, real:true, calls:4, occ:[0,12], pay:{amt:899,from:0,to:12}},
     {name:'Leah', tag:'evolution', day:1, time:'10:30a', tk:1030, real:true, occ:[0,1], pay:{amt:0}},
-    {name:'Michelle', tag:'evolution', day:3, time:'10:30a', tk:1030, real:true, occ:[0,3], pay:{amt:2000,from:0,to:0}},
+    {name:'Michelle', tag:'evolution', day:2, time:'12:00p', tk:1200, real:true, occ:[0,3], pay:{amt:2000,from:0,to:0}},
     {name:'Chandler', tag:'evolution', day:3, time:'4:30p', tk:1630, real:true, occ:[0,4], pay:{amt:1041,from:0,to:2}},
     {name:'Lindsay', tag:'threemonth', day:1, time:'6:30p', tk:1830, real:true, occ:[0,2], pay:{amt:0}},
     {name:'Katie', tag:'evolution', day:1, time:'4:30p', tk:1630, real:true, occ:[0,4], pay:{amt:1041,from:0,to:3}},
-    {name:'Jake', tag:'evolution', day:0, time:'10:30a', tk:1030, real:true, occ:[0,5], pay:{amt:0}}
+    {name:'Jake', tag:'evolution', day:0, time:'10:30a', tk:1030, real:true, occ:[0,5], pay:{amt:0}},
+    {name:'Shae', tag:'evolution', day:2, time:'10:00a', tk:1000, real:true, occ:[1,9], cap:24, pay:{amt:782,from:1,to:8}}
   ];
   // to close = the hypothetical dream fill (like the sheet). New spots + current clients evolving into monthly.
   var toclose=[
-    {name:'New Evolution 1', tag:'evonew', day:2, time:'10:00a', tk:1000, occ:[1,7], pay:{amt:975,from:1,to:9}},
-    {name:'New Evolution 2', tag:'evonew', day:2, time:'12:00p', tk:1200, occ:[1,7], pay:{amt:975,from:1,to:9}},
+    {name:'New Evolution 2', tag:'evonew', day:3, time:'10:30a', tk:1030, occ:[1,7], pay:{amt:975,from:1,to:9}},
     {name:'Leah [Monthly]', tag:'monthly', day:2, time:'2:00p', tk:1400, occ:[1,12], pay:{amt:899,from:1,to:12}},
     {name:'New Evolution 3', tag:'evonew', day:1, time:'10:30a', tk:1030, occ:[2,8], pay:{amt:975,from:2,to:9}},
     {name:'New Evolution 4', tag:'evonew', day:0, time:'12:00p', tk:1200, occ:[3,9], pay:{amt:975,from:3,to:10}},
     {name:'Michelle [Monthly]', tag:'monthly', day:0, time:'2:00p', tk:1400, occ:[3,12], pay:{amt:899,from:3,to:12}},
     {name:'Katie [Monthly]', tag:'monthly', day:1, time:'4:30p', tk:1630, occ:[5,12], pay:{amt:899,from:5,to:12}},
     {name:'New Monthly 1', tag:'monthly', day:1, time:'6:30p', tk:1830, occ:[6,12], pay:{amt:899,from:6,to:12}},
-    {name:'New Evolution 5', tag:'evonew', day:3, time:'10:30a', tk:1030, occ:[4,9], pay:{amt:975,from:3,to:10}}
+    {name:'New Evolution 5', tag:'evonew', day:3, time:'4:30p', tk:1630, occ:[5,10], pay:{amt:975,from:3,to:10}}
   ];
   function money(n){return "$"+Math.round(n).toLocaleString("en-US");}
   function $(id){return document.getElementById(id);}
-  var finish6=false, chandlerWrap=false, martel43=false, newPrice=975;
+  var finish6=false, chandlerWrap=false, martel43=false, leah2=false, newPrice=975;
+  var LEAH2_RATE=659, LEAH2_CALLS=2;   // the smaller Monthly we are imagining for Leah
   function closeList(){ return toclose; }
   function activeClients(){ return committed.concat(toclose); }
   function effOcc(c){
@@ -393,12 +395,19 @@
   function payAt(c,i){
     var p=c.pay; if(!(p.amt>0)) return 0;
     var amt=(c.tag==='evonew')?newPrice:p.amt;
+    if(leah2 && c.name==='Leah [Monthly]') amt=LEAH2_RATE;   // 2 calls a month instead of 3
     return (i>=p.from && i<=p.to)?amt:0;                        // payments unchanged: they keep paying every installment even if the work finishes early
   }
   function callsAt(c,i){
     var o=effOcc(c); if(i<o[0]||i>o[1]) return 0;
     var calls=(c.calls!=null)?c.calls:PK[c.tag];
     if(martel43 && c.name==='Martel') calls=3;                  // Martel drops one call, 4 -> 3 (buffer week)
+    if(leah2 && c.name==='Leah [Monthly]') calls=LEAH2_CALLS;   // Leah on the smaller Monthly: 2 calls, 2 weeks of her slot open
+    if(c.cap!=null){                                            // fixed call budget: slot stays held, calls run out
+      var used=(i-o[0])*calls, left=c.cap-used;
+      if(left<=0) return 0;
+      if(left<calls) calls=left;
+    }
     return calls;
   }
 
@@ -412,7 +421,11 @@
     return {cash:cash,calls:calls,closing:closing,paying:paying,prepaid:prepaid,pct:Math.round(calls/CAP*100),open:CAP-calls};
   }
 
-  var calStart=0;
+  function thisMonthIndex(){                                   // M starts at Jul 26
+    var d=new Date(), i=(d.getFullYear()-2026)*12+d.getMonth()-6;
+    return Math.max(0,Math.min(N-1,i));
+  }
+  var calStart=thisMonthIndex();
   var MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
   function renderCalendar(){
     if(calStart<0)calStart=0; if(calStart>N-1)calStart=N-1;
@@ -490,7 +503,7 @@
     var body='<tr class="group"><td class="lbl">Already yours</td>';
     for(var g=0;g<N;g++)body+='<td>&nbsp;</td>';body+='</tr>';
     body+=rowsFor(committed,"commit");
-    body+='<tr class="group"><td class="lbl">Your goal: 5 Evolution + 4 Monthly to sell</td>';
+    body+='<tr class="group"><td class="lbl">Your goal: 4 Evolution + 4 Monthly to sell</td>';
     for(var g2=0;g2<N;g2++)body+='<td>&nbsp;</td>';body+='</tr>';
     body+=rowsFor(closeList(),"close");
 
@@ -518,6 +531,7 @@
   $("tFinish6").addEventListener("change",function(e){finish6=e.target.checked;renderAll();});
   $("tChandler").addEventListener("change",function(e){chandlerWrap=e.target.checked;renderAll();});
   $("tMartel43").addEventListener("change",function(e){martel43=e.target.checked;renderAll();});
+  $("tLeah2").addEventListener("change",function(e){leah2=e.target.checked;renderAll();});
 
   // drag a session to another day (visual rearrange; resets on reload)
   (function(){
