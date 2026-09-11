@@ -160,11 +160,11 @@
   .calmonthsum .pill::after{content:" ]";}
   .calmonthsum .pill.over{border-color:var(--red);color:var(--red);}
   .calmonthsum .pill.dead{color:#8C8A83;border-style:dashed;}
-  .calhdr{display:grid;grid-template-columns:repeat(5,1fr) 62px;background:var(--dark);min-width:600px;}
+  .calhdr{display:grid;grid-template-columns:repeat(5,minmax(0,1fr)) 62px;background:var(--dark);min-width:600px;}
   .calhdr div{padding:8px 6px;font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;text-align:center;color:#8C8A83;border-right:1px solid rgba(232,230,224,.12);}
   .calhdr div:last-child{border-right:0;color:var(--red);}
-  .calweek{display:grid;grid-template-columns:repeat(5,1fr) 62px;min-width:600px;border-top:1px solid var(--line-soft);}
-  .calday{border-right:1px solid var(--line-soft);min-height:104px;padding:5px 6px;background:var(--panel);}
+  .calweek{display:grid;grid-template-columns:repeat(5,minmax(0,1fr)) 62px;min-width:600px;border-top:1px solid var(--line-soft);}
+  .calday{border-right:1px solid var(--line-soft);min-height:104px;min-width:0;padding:5px 6px;background:var(--panel);}
   .calday.empty{background:transparent;}
   .calday.off{background:var(--panel-2);}
   .calday .dnum{font-family:var(--mono);font-size:11px;color:var(--ink-faint);font-weight:600;text-align:right;}
