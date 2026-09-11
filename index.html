@@ -342,7 +342,7 @@
     <div class="legend">
       <span><span class="sw commit"></span> Confirmed clients</span>
       <span><span class="sw close"></span> Goals: still to sell</span>
-      <span class="dim"><b>&times;</b> still has calls, already paid for &mdash; the month after the last &times; is when that slot frees up</span>
+      <span class="dim"><b>$0</b> still has calls, already paid for &mdash; the month after the last $0 is when that slot frees up</span>
     </div>
 
     <div class="addrow quickadd">
@@ -534,8 +534,8 @@
         for(var i=S0;i<N;i++){
           var v=payAt(c,i), ca=callsAt(c,i);
           if(v>0)       cells+='<td>'+money(v)+'</td>';
-          else if(ca>0) cells+='<td class="nocash" title="Still has calls, already paid for">&times;</td>';
-          else          cells+='<td class="z">&middot;</td>';
+          else if(ca>0) cells+='<td class="nocash" title="Still has calls, already paid for">$0</td>';
+          else          cells+='<td class="z"></td>';                  // nothing at all once they are done
         }
         out+='<tr class="'+cls+'"'+(cls==="close"?' draggable="true" data-nm="'+c.name+'"':'')+'>'+lbl+cells+'</tr>';
       });
