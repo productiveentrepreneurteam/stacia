@@ -382,7 +382,7 @@
     {name:'Ginny', tag:'integration', day:2, time:'6:30p', tk:1830, real:true, occ:[0,12], pay:{amt:0}},
     {name:'Martel', tag:'monthly', day:3, time:'6:30p', tk:1830, real:true, calls:4, occ:[0,12], pay:{amt:899,from:0,to:12}},
     {name:'Leah', tag:'evolution', day:1, time:'10:30a', tk:1030, real:true, occ:[0,1], pay:{amt:0}},
-    {name:'Michelle', tag:'evolution', day:2, time:'12:00p', tk:1200, real:true, occ:[0,1], pay:{amt:2000,from:0,to:0}},
+    {name:'Michelle', tag:'evolution', day:2, time:'12:00p', tk:1200, real:true, occ:[0,3], pay:{amt:2000,from:0,to:0}},
     {name:'Chandler', tag:'evolution', day:3, time:'4:30p', tk:1630, real:true, occ:[0,4], pay:{amt:1041,from:0,to:2}},
     {name:'Lindsay', tag:'threemonth', day:1, time:'6:30p', tk:1830, real:true, occ:[0,2], pay:{amt:0}},
     {name:'Katie', tag:'evolution', day:1, time:'4:30p', tk:1630, real:true, occ:[0,3], pay:{amt:1041,from:0,to:3}},
@@ -392,8 +392,9 @@
   // to close = the hypothetical dream fill (like the sheet). New spots + current clients evolving into Revolution.
   var toclose=[
     {name:'Leah [Revolution]', tag:'monthly', day:1, time:'10:30a', tk:1030, calls:2, conv:true, occ:[2,12], pay:{amt:659,from:2,to:12}},
-    {name:'Michelle [Revolution]', tag:'monthly', day:0, time:'2:00p', tk:1400, conv:true, occ:[2,12], pay:{amt:899,from:2,to:12}},
-    {name:'Katie [Revolution]', tag:'monthly', day:1, time:'4:30p', tk:1630, conv:true, occ:[4,12], pay:{amt:899,from:4,to:12}}
+    {name:'Michelle [Revolution]', tag:'monthly', day:2, time:'12:00p', tk:1200, conv:true, occ:[4,12], pay:{amt:899,from:4,to:12}},
+    {name:'Katie [Revolution]', tag:'monthly', day:1, time:'4:30p', tk:1630, conv:true, occ:[4,12], pay:{amt:899,from:4,to:12}},
+    {name:'Lindsay [3 Month]', tag:'threemonth', day:1, time:'6:30p', tk:1830, conv:true, occ:[4,6], pay:{amt:0,from:4,to:6}}
   ];
   function nowIndex(){                                          // M starts at Jul 26
     var d=new Date(), i=(d.getFullYear()-2026)*12+d.getMonth()-6;
