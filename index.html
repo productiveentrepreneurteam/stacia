@@ -352,12 +352,16 @@
 
     <div class="addrow">
       <span class="qalab">[ or something outside the usual ]</span>
-      <input id="ncName" placeholder="Name / Offer">
-      <select id="ncPkg"></select>
+      <input id="ncName" placeholder="Name / Offer, e.g. Dana VIP day">
+      <select id="ncDay"></select>
       <select id="ncStart"></select>
       <span class="pxin"><span>$</span><input id="ncPay" type="number" value="975" step="25"></span>
       <span class="micro">/mo</span>
-      <button id="ncAdd">+ Add spot</button>
+      <span class="pxin"><input id="ncCalls" type="number" value="4" min="0" step="1"></span>
+      <span class="micro">calls/mo</span>
+      <span class="pxin"><input id="ncMonths" type="number" value="7" min="1" step="1"></span>
+      <span class="micro">months</span>
+      <button id="ncAdd">+ Add</button>
     </div>
   </div>
 </div>
@@ -375,8 +379,8 @@
 (function(){
   var M=['Jul 26','Aug 26','Sep 26','Oct 26','Nov 26','Dec 26','Jan 27','Feb 27','Mar 27','Apr 27','May 27','Jun 27','Jul 27'];
   var N=M.length, CAP=36;
-  var PK={integration:1, monthly:3, evolution:4, evonew:4, threemonth:4}; // Evolution weekly = 4/mo; Revolution = 3/mo; Integration = 1/mo (90min). Martel grandfathered at 4 via override.
-  var PKN={integration:'Integration', monthly:'Revolution', evolution:'Evolution', evonew:'Evolution (new)', threemonth:'3 Month'};
+  var PK={integration:1, monthly:3, evolution:4, evonew:4, threemonth:4, custom:1}; // Evolution weekly = 4/mo; Revolution = 3/mo; Integration = 1/mo (90min). Martel grandfathered at 4 via override.
+  var PKN={integration:'Integration', monthly:'Revolution', evolution:'Evolution', evonew:'Evolution (new)', threemonth:'3 Month', custom:''};
   // committed = real clients, already paying. day 0=Mon..4=Fri, tk=time sort key. occ=calendar window; pay={amt,from,to}
   var committed=[
     {name:'Ginny', tag:'integration', day:2, time:'6:30p', tk:1830, real:true, occ:[0,12], pay:{amt:0}},
@@ -551,9 +555,13 @@
   }
 
   function fillSelects(){
-    var ps=$("ncPkg");ps.innerHTML="";
-    [["evonew","Evolution (new)"],["monthly","Revolution"],["integration","Integration"]].forEach(function(p){
-      var o=document.createElement("option");o.value=p[0];o.textContent=p[1];ps.appendChild(o);});
+    var ds=$("ncDay");ds.innerHTML="";
+    [[0,'Mon'],[1,'Tue'],[2,'Wed'],[3,'Thu']].forEach(function(d){
+      ['10:00a','10:30a','12:00p','2:00p','4:30p','6:30p'].forEach(function(tm){
+        var o=document.createElement("option");
+        o.value=d[0]+"|"+tm; o.textContent=d[1]+" "+tm;
+        if(d[0]===2&&tm==='12:00p')o.selected=true;
+        ds.appendChild(o);});});
     [["ncStart"],["qaStart"]].forEach(function(id){
       var ms=$(id[0]);ms.innerHTML="";
       for(var i=nowIndex();i<N;i++){var o=document.createElement("option");o.value=i;o.textContent="Starts "+M[i];ms.appendChild(o);}
@@ -661,10 +669,18 @@
 
   $("ncAdd").addEventListener("click",function(){
     var name=($("ncName").value||"").trim()||"New spot";
-    var pk=$("ncPkg").value, start=+$("ncStart").value, pay=Math.max(0,+$("ncPay").value||0);
-    var len = pk==="evonew"?7 : pk==="integration"?12 : 12;
-    var end=Math.min(N-1,start+len-1);
-    toclose.push({name:name,tag:pk,day:2,time:'12:00p',tk:1200,occ:[start,end],pay:{amt:pay,from:start,to:end}});
+    var taken={}; committed.concat(toclose).forEach(function(c){taken[c.name]=true;});
+    if(taken[name]){var k=2; while(taken[name+" "+k])k++; name=name+" "+k;}   // names must stay unique: removing and dragging both match on them
+    var start=+$("ncStart").value,
+        pay=Math.max(0,+$("ncPay").value||0),
+        calls=Math.max(0,Math.round(+$("ncCalls").value||0)),
+        months=Math.max(1,Math.round(+$("ncMonths").value||1));
+    var dt=($("ncDay").value||"2|12:00p").split("|"), day=+dt[0], time=dt[1];
+    var tk=(function(t){var m=t.match(/^(\d+):(\d+)([ap])$/); if(!m)return 1200;
+      var h=+m[1]%12+(m[3]==='p'?12:0); return h*100+ +m[2];})(time);
+    var end=Math.min(N-1,start+months-1);
+    toclose.push({name:name,tag:'custom',calls:calls,day:day,time:time,tk:tk,
+                  occ:[start,end],pay:{amt:pay,from:start,to:end}});
     $("ncName").value="";renderAll();
   });
 
