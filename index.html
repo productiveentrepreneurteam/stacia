@@ -135,9 +135,11 @@
   .calnav button:disabled{opacity:.3;cursor:default;}
   .calnav #calRange{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;}
   .calnav #calRange{font-family:var(--sans);font-size:19px;font-weight:800;text-transform:uppercase;letter-spacing:-.02em;color:var(--ink);}
-  .scenariobar{display:flex;flex-wrap:wrap;gap:9px;align-items:stretch;padding:14px;border:1px solid var(--line);background:var(--panel);margin-bottom:14px;}
+  .scenariobar{display:flex;flex-wrap:wrap;gap:7px;align-items:stretch;padding:14px;border:1px solid var(--line);background:var(--panel);margin-bottom:14px;}
   .scenariobar .sblabel{width:100%;font-family:var(--mono);font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:2px;}
-  .scenariobar .tog{flex:1;min-width:210px;display:inline-flex;align-items:center;gap:11px;font-size:12.5px;line-height:1.35;color:var(--ink-soft);cursor:pointer;border:1px solid var(--line);background:var(--panel-2);padding:10px 13px;}
+  .scenariobar .tog{flex:1 1 0;min-width:0;display:inline-flex;align-items:center;gap:8px;font-size:11.5px;line-height:1.3;color:var(--ink-soft);cursor:pointer;border:1px solid var(--line);background:var(--panel-2);padding:10px 11px;}
+  .scenariobar .tog b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  @media (max-width:720px){.scenariobar .tog{flex:1 1 210px;min-width:210px;font-size:12.5px;}}
   .scenariobar .tog b{color:var(--ink);font-weight:700;}
   .scenariobar .tog:hover{border-color:var(--red-line);}
   .scenariobar .tog:has(input:checked){border-color:var(--red);color:var(--ink);}
@@ -309,7 +311,7 @@
       <label class="tog"><input type="checkbox" id="tFinish6"> <b>Evolution finishes in 6</b></label>
       <label class="tog"><input type="checkbox" id="tChandler"> <b>Wrap Chandler early</b></label>
       <label class="tog"><input type="checkbox" id="tMartel43"> <b>Martel 4 &rarr; 3 calls</b></label>
-      <label class="tog"><input type="checkbox" id="tLeah2"> <b>Leah 2&times;/month at $659</b></label>
+      <label class="tog"><input type="checkbox" id="tLeah2"> <b>Leah joins</b></label>
     </div>
     <div class="callegend">
       <span>&#128274; committed &middot; already paying</span>
@@ -374,8 +376,8 @@
   // to close = the hypothetical dream fill (like the sheet). New spots + current clients evolving into Revolution.
   var toclose=[
     {name:'New Evolution 2', tag:'evonew', day:3, time:'10:30a', tk:1030, occ:[1,7], pay:{amt:975,from:1,to:9}},
-    {name:'Leah [Revolution]', tag:'monthly', day:2, time:'2:00p', tk:1400, occ:[1,12], pay:{amt:899,from:1,to:12}},
-    {name:'New Evolution 3', tag:'evonew', day:1, time:'10:30a', tk:1030, occ:[2,8], pay:{amt:975,from:2,to:9}},
+    {name:'Leah [Revolution]', tag:'monthly', day:1, time:'10:30a', tk:1030, occ:[2,12], pay:{amt:899,from:2,to:12}},
+    {name:'New Evolution 3', tag:'evonew', day:2, time:'2:00p', tk:1400, occ:[2,8], pay:{amt:975,from:2,to:9}},
     {name:'New Evolution 4', tag:'evonew', day:0, time:'12:00p', tk:1200, occ:[3,9], pay:{amt:975,from:3,to:10}},
     {name:'Michelle [Revolution]', tag:'monthly', day:0, time:'2:00p', tk:1400, occ:[3,12], pay:{amt:899,from:3,to:12}},
     {name:'Katie [Revolution]', tag:'monthly', day:1, time:'4:30p', tk:1630, occ:[5,12], pay:{amt:899,from:5,to:12}},
