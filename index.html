@@ -192,8 +192,7 @@
   .fctable tr.caprow td.over{color:var(--red);}
   .fctable tr.cashrow td{color:var(--red);font-weight:700;}
   .fctable tr.takerow td{color:var(--ink-soft);}
-  .fctable tr.tierrow td{color:var(--ink-faint);font-size:11px;}
-  .fctable tr.tierrow td.lbl{color:var(--ink-soft);font-weight:400;font-style:italic;}
+  .fctable tr.commrow td{color:var(--ink);font-weight:700;}
   .fctable tr.close{cursor:grab;}
   .fctable tr.close.dropto td{box-shadow:inset 0 2px 0 var(--red);}
   .fctable td.lbl .nm{font-weight:700;font-family:var(--sans);letter-spacing:-.01em;}
@@ -507,26 +506,19 @@
     for(var i=S0;i<N;i++)head+='<th>'+M[i]+'</th>';
     head+='</tr>';
     var cap='<tr class="caprow"><td class="lbl">Calendar full</td>';
-    var cash='<tr class="cashrow"><td class="lbl">Cash coming in</td>';
-    var take='<tr class="takerow"><td class="lbl">Take-home (~2/3)</td>';
-    var tReal='<tr class="tierrow"><td class="lbl">&mdash; already yours, signed</td>';
-    var tConv='<tr class="tierrow"><td class="lbl">&mdash; if Leah, Michelle &amp; Katie carry on</td>';
-    var tNew ='<tr class="tierrow"><td class="lbl">&mdash; if you sell the rest</td>';
-    var conv=closeList().filter(function(c){return c.conv;});
-    var fresh=closeList().filter(function(c){return !c.conv;});
+    var comm='<tr class="commrow"><td class="lbl">Cash committed</td>';
+    var cash='<tr class="cashrow"><td class="lbl">Cash projected</td>';
+    var take='<tr class="takerow"><td class="lbl">Take-home (~2/3 of projected)</td>';
     function sum(list,i){var t=0;list.forEach(function(c){t+=payAt(c,i);});return t;}
     for(var j=S0;j<N;j++){
-      var t=monthTotals(j);
+      var t=monthTotals(j), r=sum(committed,j);
       cap+='<td class="'+(t.calls>CAP?'over':'')+'">'+t.pct+'%</td>';
+      comm+='<td class="'+(r>0?'':'z')+'">'+(r>0?money(r):'&middot;')+'</td>';
       cash+='<td>'+money(t.cash)+'</td>';
       take+='<td>'+money(t.cash*0.67)+'</td>';
-      var r=sum(committed,j), cv=sum(conv,j), fr=sum(fresh,j);
-      tReal+='<td class="'+(r>0?'':'z')+'">'+(r>0?money(r):'&middot;')+'</td>';
-      tConv+='<td class="'+(cv>0?'':'z')+'">'+(cv>0?money(cv):'&middot;')+'</td>';
-      tNew +='<td class="'+(fr>0?'':'z')+'">'+(fr>0?money(fr):'&middot;')+'</td>';
     }
-    cap+='</tr>';cash+='</tr>';take+='</tr>';tReal+='</tr>';tConv+='</tr>';tNew+='</tr>';
-    cash=cash+tReal+tConv+tNew;
+    cap+='</tr>';comm+='</tr>';cash+='</tr>';take+='</tr>';
+    cash=comm+cash;
 
     function rowsFor(list,cls){
       var out="";
