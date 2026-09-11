@@ -311,7 +311,9 @@
       <label class="tog"><input type="checkbox" id="tFinish6"> <b>Evolution finishes in 6</b></label>
       <label class="tog"><input type="checkbox" id="tChandler"> <b>Wrap Chandler early</b></label>
       <label class="tog"><input type="checkbox" id="tMartel43"> <b>Martel 4 &rarr; 3 calls</b></label>
-      <label class="tog"><input type="checkbox" id="tLeah2"> <b>Leah joins</b></label>
+      <label class="tog"><input type="checkbox" id="tLeah" checked> <b>Leah joins</b></label>
+      <label class="tog"><input type="checkbox" id="tMichelle" checked> <b>Michelle joins</b></label>
+      <label class="tog"><input type="checkbox" id="tKatie" checked> <b>Katie joins</b></label>
     </div>
     <div class="callegend">
       <span>&#128274; committed &middot; already paying</span>
@@ -376,20 +378,20 @@
   // to close = the hypothetical dream fill (like the sheet). New spots + current clients evolving into Revolution.
   var toclose=[
     {name:'New Evolution 2', tag:'evonew', day:3, time:'10:30a', tk:1030, occ:[1,7], pay:{amt:975,from:1,to:9}},
-    {name:'Leah [Revolution]', tag:'monthly', day:1, time:'10:30a', tk:1030, occ:[2,12], pay:{amt:899,from:2,to:12}},
+    {name:'Leah [Revolution]', tag:'monthly', day:1, time:'10:30a', tk:1030, calls:2, occ:[2,12], pay:{amt:659,from:2,to:12}},
     {name:'New Evolution 3', tag:'evonew', day:2, time:'2:00p', tk:1400, occ:[2,8], pay:{amt:975,from:2,to:9}},
     {name:'New Evolution 4', tag:'evonew', day:0, time:'12:00p', tk:1200, occ:[3,9], pay:{amt:975,from:3,to:10}},
-    {name:'Michelle [Revolution]', tag:'monthly', day:0, time:'2:00p', tk:1400, occ:[3,12], pay:{amt:899,from:3,to:12}},
+    {name:'Michelle [Revolution]', tag:'monthly', day:0, time:'2:00p', tk:1400, occ:[4,12], pay:{amt:899,from:4,to:12}},
     {name:'Katie [Revolution]', tag:'monthly', day:1, time:'4:30p', tk:1630, occ:[5,12], pay:{amt:899,from:5,to:12}},
     {name:'New Revolution 1', tag:'monthly', day:1, time:'6:30p', tk:1830, occ:[6,12], pay:{amt:899,from:6,to:12}},
     {name:'New Evolution 5', tag:'evonew', day:3, time:'4:30p', tk:1630, occ:[5,10], pay:{amt:975,from:3,to:10}}
   ];
   function money(n){return "$"+Math.round(n).toLocaleString("en-US");}
   function $(id){return document.getElementById(id);}
-  var finish6=false, chandlerWrap=false, martel43=false, leah2=false, newPrice=975;
-  var LEAH2_RATE=659, LEAH2_CALLS=2;   // the smaller Revolution we are imagining for Leah
-  function closeList(){ return toclose; }
-  function activeClients(){ return committed.concat(toclose); }
+  var finish6=false, chandlerWrap=false, martel43=false, newPrice=975;
+  var joins={'Leah [Revolution]':true, 'Michelle [Revolution]':true, 'Katie [Revolution]':true};
+  function closeList(){ return toclose.filter(function(c){ return joins[c.name]!==false; }); }
+  function activeClients(){ return committed.concat(closeList()); }
   function effOcc(c){
     var s=c.occ[0], e=c.occ[1];
     if(finish6 && c.tag==='evonew') e=Math.max(s,e-1);          // finishes in 6: last month of weekly calls opens up
@@ -399,14 +401,12 @@
   function payAt(c,i){
     var p=c.pay; if(!(p.amt>0)) return 0;
     var amt=(c.tag==='evonew')?newPrice:p.amt;
-    if(leah2 && c.name==='Leah [Revolution]') amt=LEAH2_RATE;   // 2 calls a month instead of 3
     return (i>=p.from && i<=p.to)?amt:0;                        // payments unchanged: they keep paying every installment even if the work finishes early
   }
   function callsAt(c,i){
     var o=effOcc(c); if(i<o[0]||i>o[1]) return 0;
     var calls=(c.calls!=null)?c.calls:PK[c.tag];
     if(martel43 && c.name==='Martel') calls=3;                  // Martel drops one call, 4 -> 3 (buffer week)
-    if(leah2 && c.name==='Leah [Revolution]') calls=LEAH2_CALLS;   // Leah on the smaller Revolution: 2 calls, 2 weeks of her slot open
     if(c.cap!=null){                                            // fixed call budget: slot stays held, calls run out
       var used=(i-o[0])*calls, left=c.cap-used;
       if(left<=0) return 0;
@@ -535,7 +535,8 @@
   $("tFinish6").addEventListener("change",function(e){finish6=e.target.checked;renderAll();});
   $("tChandler").addEventListener("change",function(e){chandlerWrap=e.target.checked;renderAll();});
   $("tMartel43").addEventListener("change",function(e){martel43=e.target.checked;renderAll();});
-  $("tLeah2").addEventListener("change",function(e){leah2=e.target.checked;renderAll();});
+  [["tLeah","Leah [Revolution]"],["tMichelle","Michelle [Revolution]"],["tKatie","Katie [Revolution]"]]
+    .forEach(function(t){ $(t[0]).addEventListener("change",function(e){ joins[t[1]]=e.target.checked; renderAll(); }); });
 
   // drag a session to another day (visual rearrange; resets on reload)
   (function(){
