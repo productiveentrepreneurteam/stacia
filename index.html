@@ -207,6 +207,9 @@
   .fctable .rm{border:1px solid var(--line);background:transparent;color:var(--ink-faint);cursor:pointer;width:18px;height:18px;font-size:10px;line-height:1;margin-left:8px;}
 
   .addrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:14px 4px 0;}
+  .addrow .qalab{width:100%;font-family:var(--mono);font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-faint);}
+  .addrow.quickadd button{background:var(--ink);}
+  .addrow.quickadd button:hover{background:var(--red);}
   .addrow select,.addrow input{border:1px solid var(--line);background:var(--panel);color:var(--ink);font-family:var(--sans);font-size:13px;padding:8px 10px;-moz-appearance:textfield;}
   .addrow input::-webkit-outer-spin-button,.addrow input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
   .addrow .pxin{display:inline-flex;align-items:center;border:1px solid var(--line);background:var(--panel);padding:0 9px;}
@@ -337,12 +340,20 @@
 
     <div class="fcwrap"><table class="fctable" id="fcTable"></table></div>
     <div class="legend">
-      <span><span class="sw commit"></span> Already yours, paying now</span>
-      <span><span class="sw close"></span> Still to sell, your goal</span>
+      <span><span class="sw commit"></span> Confirmed clients</span>
+      <span><span class="sw close"></span> Goals: still to sell</span>
+    </div>
+
+    <div class="addrow quickadd">
+      <span class="qalab">[ add a client on the usual pricing ]</span>
+      <select id="qaStart"></select>
+      <button id="qaEvo">+ Evolution client</button>
+      <button id="qaRev">+ Revolution client</button>
     </div>
 
     <div class="addrow">
-      <input id="ncName" placeholder="Add a spot to close&hellip;">
+      <span class="qalab">[ or something outside the usual, like Leah ]</span>
+      <input id="ncName" placeholder="Name this spot&hellip;">
       <select id="ncPkg"></select>
       <select id="ncStart"></select>
       <span class="pxin"><span>$</span><input id="ncPay" type="number" value="975" step="25"></span>
@@ -555,8 +566,10 @@
     var ps=$("ncPkg");ps.innerHTML="";
     [["evonew","Evolution (new)"],["monthly","Revolution"],["integration","Integration"]].forEach(function(p){
       var o=document.createElement("option");o.value=p[0];o.textContent=p[1];ps.appendChild(o);});
-    var ms=$("ncStart");ms.innerHTML="";
-    for(var i=nowIndex();i<N;i++){var o=document.createElement("option");o.value=i;o.textContent="Starts "+M[i];ms.appendChild(o);}
+    [["ncStart"],["qaStart"]].forEach(function(id){
+      var ms=$(id[0]);ms.innerHTML="";
+      for(var i=nowIndex();i<N;i++){var o=document.createElement("option");o.value=i;o.textContent="Starts "+M[i];ms.appendChild(o);}
+    });
   }
 
   function renderAll(){renderCalendar();renderTable();renderSummary();}
@@ -632,6 +645,27 @@
     for(var i=0;i<toclose.length;i++){if(toclose[i].name===nm){toclose.splice(i,1);break;}}
     renderAll();
   });
+  // one click adds a client on the standard terms; she only picks the month
+  function nextName(word){
+    var n=0;
+    committed.concat(toclose).forEach(function(c){
+      var m=c.name.match(new RegExp("^New "+word+" (\d+)$")); if(m) n=Math.max(n,+m[1]);
+    });
+    return "New "+word+" "+(n+1);
+  }
+  function addStandard(kind){
+    var start=+$("qaStart").value;
+    var evo = kind==="evonew";
+    var name = nextName(evo?"Evolution":"Revolution");
+    var callEnd = evo ? Math.min(N-1,start+6) : N-1;          // Evolution is held 7 months
+    var payEnd  = evo ? Math.min(N-1,start+7) : N-1;          // Evolution is 8 payments
+    toclose.push({name:name, tag:kind, day:2, time:'12:00p', tk:1200,
+                  occ:[start,callEnd], pay:{amt:(evo?975:899), from:start, to:payEnd}});
+    renderAll();
+  }
+  $("qaEvo").addEventListener("click",function(){addStandard("evonew");});
+  $("qaRev").addEventListener("click",function(){addStandard("monthly");});
+
   $("ncAdd").addEventListener("click",function(){
     var name=($("ncName").value||"").trim()||"New spot";
     var pk=$("ncPkg").value, start=+$("ncStart").value, pay=Math.max(0,+$("ncPay").value||0);
