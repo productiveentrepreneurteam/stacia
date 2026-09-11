@@ -192,6 +192,10 @@
   .fctable tr.caprow td.over{color:var(--red);}
   .fctable tr.cashrow td{color:var(--red);font-weight:700;}
   .fctable tr.takerow td{color:var(--ink-soft);}
+  .fctable tr.tierrow td{color:var(--ink-faint);font-size:11px;}
+  .fctable tr.tierrow td.lbl{color:var(--ink-soft);font-weight:400;font-style:italic;}
+  .fctable tr.close{cursor:grab;}
+  .fctable tr.close.dropto td{box-shadow:inset 0 2px 0 var(--red);}
   .fctable td.lbl .nm{font-weight:700;font-family:var(--sans);letter-spacing:-.01em;}
   .fctable td.lbl .tg{font-size:9.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.04em;}
   .fctable tr.commit td.lbl{border-left:3px solid var(--ink-faint);}
@@ -377,15 +381,33 @@
   ];
   // to close = the hypothetical dream fill (like the sheet). New spots + current clients evolving into Revolution.
   var toclose=[
-    {name:'New Evolution 2', tag:'evonew', day:3, time:'10:30a', tk:1030, occ:[1,7], pay:{amt:975,from:1,to:9}},
-    {name:'Leah [Revolution]', tag:'monthly', day:1, time:'10:30a', tk:1030, calls:2, occ:[2,12], pay:{amt:659,from:2,to:12}},
-    {name:'New Evolution 3', tag:'evonew', day:2, time:'2:00p', tk:1400, occ:[2,8], pay:{amt:975,from:2,to:9}},
-    {name:'New Evolution 4', tag:'evonew', day:0, time:'12:00p', tk:1200, occ:[3,9], pay:{amt:975,from:3,to:10}},
-    {name:'Michelle [Revolution]', tag:'monthly', day:0, time:'2:00p', tk:1400, occ:[2,12], pay:{amt:899,from:2,to:12}},
-    {name:'Katie [Revolution]', tag:'monthly', day:1, time:'4:30p', tk:1630, occ:[4,12], pay:{amt:899,from:4,to:12}},
-    {name:'New Revolution 1', tag:'monthly', day:1, time:'6:30p', tk:1830, occ:[6,12], pay:{amt:899,from:6,to:12}},
-    {name:'New Evolution 5', tag:'evonew', day:3, time:'4:30p', tk:1630, occ:[5,10], pay:{amt:975,from:3,to:10}}
+    {name:'New Evolution 2', tag:'evonew', day:3, time:'10:30a', tk:1030, hypo:true, occ:[0,0], pay:{amt:975,from:0,to:0}},
+    {name:'Leah [Revolution]', tag:'monthly', day:1, time:'10:30a', tk:1030, calls:2, conv:true, occ:[2,12], pay:{amt:659,from:2,to:12}},
+    {name:'New Evolution 3', tag:'evonew', day:2, time:'2:00p', tk:1400, hypo:true, occ:[0,0], pay:{amt:975,from:0,to:0}},
+    {name:'New Evolution 4', tag:'evonew', day:0, time:'12:00p', tk:1200, hypo:true, occ:[0,0], pay:{amt:975,from:0,to:0}},
+    {name:'Michelle [Revolution]', tag:'monthly', day:0, time:'2:00p', tk:1400, conv:true, occ:[2,12], pay:{amt:899,from:2,to:12}},
+    {name:'Katie [Revolution]', tag:'monthly', day:1, time:'4:30p', tk:1630, conv:true, occ:[4,12], pay:{amt:899,from:4,to:12}},
+    {name:'New Revolution 1', tag:'monthly', day:1, time:'6:30p', tk:1830, hypo:true, occ:[0,0], pay:{amt:899,from:0,to:0}},
+    {name:'New Evolution 5', tag:'evonew', day:3, time:'4:30p', tk:1630, hypo:true, occ:[0,0], pay:{amt:975,from:0,to:0}}
   ];
+  function nowIndex(){                                          // M starts at Jul 26
+    var d=new Date(), i=(d.getFullYear()-2026)*12+d.getMonth()-6;
+    return Math.max(0,Math.min(N-1,i));
+  }
+  // A spot nobody has closed yet cannot have started in a month that has already gone.
+  // The first unsold spot starts this month, the next one the month after, and so on down
+  // the list, so dragging the red rows into a different order changes who she closes first.
+  function reseed(){
+    var k=0;
+    toclose.forEach(function(c){
+      if(!c.hypo) return;
+      var L=Math.min(N-1, nowIndex()+k); k++;
+      var callMonths=(c.tag==='evonew')?6:(N-1-L);              // Evolution is held 7 months
+      var payMonths =(c.tag==='evonew')?7:(N-1-L);              // Evolution is 8 payments
+      c.occ=[L, Math.min(N-1,L+callMonths)];
+      c.pay.from=L; c.pay.to=Math.min(N-1,L+payMonths);
+    });
+  }
   function money(n){return "$"+Math.round(n).toLocaleString("en-US");}
   function $(id){return document.getElementById(id);}
   var finish6=false, chandlerWrap=false, martel43=false, newPrice=975;
@@ -425,11 +447,7 @@
     return {cash:cash,calls:calls,closing:closing,paying:paying,prepaid:prepaid,pct:Math.round(calls/CAP*100),open:CAP-calls};
   }
 
-  function thisMonthIndex(){                                   // M starts at Jul 26
-    var d=new Date(), i=(d.getFullYear()-2026)*12+d.getMonth()-6;
-    return Math.max(0,Math.min(N-1,i));
-  }
-  var calStart=thisMonthIndex();
+  var calStart=nowIndex();
   var MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
   function renderCalendar(){
     if(calStart<0)calStart=0; if(calStart>N-1)calStart=N-1;
@@ -478,19 +496,31 @@
   }
 
   function renderTable(){
+    var S0=nowIndex();
     var head='<tr><th class="lbl">&nbsp;</th>';
-    for(var i=0;i<N;i++)head+='<th>'+M[i]+'</th>';
+    for(var i=S0;i<N;i++)head+='<th>'+M[i]+'</th>';
     head+='</tr>';
     var cap='<tr class="caprow"><td class="lbl">Calendar full</td>';
     var cash='<tr class="cashrow"><td class="lbl">Cash coming in</td>';
     var take='<tr class="takerow"><td class="lbl">Take-home (~2/3)</td>';
-    for(var j=0;j<N;j++){
+    var tReal='<tr class="tierrow"><td class="lbl">&mdash; already yours, signed</td>';
+    var tConv='<tr class="tierrow"><td class="lbl">&mdash; if Leah, Michelle &amp; Katie carry on</td>';
+    var tNew ='<tr class="tierrow"><td class="lbl">&mdash; if you sell the rest</td>';
+    var conv=closeList().filter(function(c){return c.conv;});
+    var fresh=closeList().filter(function(c){return !c.conv;});
+    function sum(list,i){var t=0;list.forEach(function(c){t+=payAt(c,i);});return t;}
+    for(var j=S0;j<N;j++){
       var t=monthTotals(j);
       cap+='<td class="'+(t.calls>CAP?'over':'')+'">'+t.pct+'%</td>';
       cash+='<td>'+money(t.cash)+'</td>';
       take+='<td>'+money(t.cash*0.67)+'</td>';
+      var r=sum(committed,j), cv=sum(conv,j), fr=sum(fresh,j);
+      tReal+='<td class="'+(r>0?'':'z')+'">'+(r>0?money(r):'&middot;')+'</td>';
+      tConv+='<td class="'+(cv>0?'':'z')+'">'+(cv>0?money(cv):'&middot;')+'</td>';
+      tNew +='<td class="'+(fr>0?'':'z')+'">'+(fr>0?money(fr):'&middot;')+'</td>';
     }
-    cap+='</tr>';cash+='</tr>';take+='</tr>';
+    cap+='</tr>';cash+='</tr>';take+='</tr>';tReal+='</tr>';tConv+='</tr>';tNew+='</tr>';
+    cash=cash+tReal+tConv+tNew;
 
     function rowsFor(list,cls){
       var out="";
@@ -499,16 +529,16 @@
         if(cls==="close" && !c.fixed){lbl+='<button class="rm" data-nm="'+c.name+'">&times;</button>';}
         lbl+='</td>';
         var cells="";
-        for(var i=0;i<N;i++){var v=payAt(c,i);cells+='<td class="'+(v>0?'':'z')+'">'+(v>0?money(v):'&middot;')+'</td>';}
-        out+='<tr class="'+cls+'">'+lbl+cells+'</tr>';
+        for(var i=S0;i<N;i++){var v=payAt(c,i);cells+='<td class="'+(v>0?'':'z')+'">'+(v>0?money(v):'&middot;')+'</td>';}
+        out+='<tr class="'+cls+'"'+(cls==="close"?' draggable="true" data-nm="'+c.name+'"':'')+'>'+lbl+cells+'</tr>';
       });
       return out;
     }
     var body='<tr class="group"><td class="lbl">Already yours</td>';
-    for(var g=0;g<N;g++)body+='<td>&nbsp;</td>';body+='</tr>';
+    for(var g=S0;g<N;g++)body+='<td>&nbsp;</td>';body+='</tr>';
     body+=rowsFor(committed,"commit");
     body+='<tr class="group"><td class="lbl">Your goal: 4 Evolution + 4 Revolution to sell</td>';
-    for(var g2=0;g2<N;g2++)body+='<td>&nbsp;</td>';body+='</tr>';
+    for(var g2=S0;g2<N;g2++)body+='<td>&nbsp;</td>';body+='</tr>';
     body+=rowsFor(closeList(),"close");
 
     $("fcTable").innerHTML=head+cap+cash+take+body;
@@ -526,10 +556,43 @@
     [["evonew","Evolution (new)"],["monthly","Revolution"],["integration","Integration"]].forEach(function(p){
       var o=document.createElement("option");o.value=p[0];o.textContent=p[1];ps.appendChild(o);});
     var ms=$("ncStart");ms.innerHTML="";
-    for(var i=0;i<N;i++){var o=document.createElement("option");o.value=i;o.textContent="Lands "+M[i];ms.appendChild(o);}
+    for(var i=nowIndex();i<N;i++){var o=document.createElement("option");o.value=i;o.textContent="Starts "+M[i];ms.appendChild(o);}
   }
 
   function renderAll(){renderCalendar();renderTable();renderSummary();}
+
+  // drag a red row up or down to change the order she closes them in
+  (function(){
+    var tb=$("fcTable"), from=null;
+    tb.addEventListener("dragstart",function(e){
+      var tr=e.target.closest&&e.target.closest("tr.close"); if(!tr)return;
+      from=tr.dataset.nm; e.dataTransfer.effectAllowed="move";
+      try{e.dataTransfer.setData("text/plain",from);}catch(x){}
+    });
+    tb.addEventListener("dragover",function(e){
+      var tr=e.target.closest&&e.target.closest("tr.close"); if(!tr||!from)return;
+      e.preventDefault(); e.dataTransfer.dropEffect="move";
+      tb.querySelectorAll("tr.dropto").forEach(function(r){r.classList.remove("dropto");});
+      tr.classList.add("dropto");
+    });
+    tb.addEventListener("dragleave",function(e){
+      var tr=e.target.closest&&e.target.closest("tr.close"); if(tr)tr.classList.remove("dropto");
+    });
+    tb.addEventListener("drop",function(e){
+      var tr=e.target.closest&&e.target.closest("tr.close"); if(!tr||!from)return;
+      e.preventDefault(); tr.classList.remove("dropto");
+      var to=tr.dataset.nm; if(to===from){from=null;return;}
+      var fi=-1,ti=-1;
+      for(var i=0;i<toclose.length;i++){ if(toclose[i].name===from)fi=i; if(toclose[i].name===to)ti=i; }
+      if(fi<0||ti<0){from=null;return;}
+      var moved=toclose.splice(fi,1)[0];
+      toclose.splice(ti,0,moved);
+      from=null; reseed(); renderAll();
+    });
+    tb.addEventListener("dragend",function(){
+      from=null; tb.querySelectorAll("tr.dropto").forEach(function(r){r.classList.remove("dropto");});
+    });
+  })();
   $("calPrev").addEventListener("click",function(){calStart-=1;renderCalendar();});
   $("calNext").addEventListener("click",function(){calStart+=1;renderCalendar();});
   $("tFinish6").addEventListener("change",function(e){finish6=e.target.checked;renderAll();});
