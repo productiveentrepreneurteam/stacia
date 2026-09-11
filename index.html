@@ -647,11 +647,16 @@
   });
   // one click adds a client on the standard terms; she only picks the month
   function nextName(word){
-    var n=0;
+    var prefix="New "+word+" ", n=0, taken={};
     committed.concat(toclose).forEach(function(c){
-      var m=c.name.match(new RegExp("^New "+word+" (\d+)$")); if(m) n=Math.max(n,+m[1]);
+      taken[c.name]=true;
+      if(c.name.indexOf(prefix)!==0) return;
+      var tail=c.name.slice(prefix.length);
+      if(/^\d+$/.test(tail)) n=Math.max(n,+tail);       // regex literal: "\d" inside a JS string loses its backslash
     });
-    return "New "+word+" "+(n+1);
+    var nm=prefix+(n+1);
+    while(taken[nm]){ n++; nm=prefix+(n+1); }            // two rows must never share a name; removing and dragging both match on it
+    return nm;
   }
   function addStandard(kind){
     var start=+$("qaStart").value;
